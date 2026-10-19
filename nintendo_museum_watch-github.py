@@ -38,6 +38,7 @@ TARGET_DATES = [
     "2026-12-02",
     "2026-12-03",
     "2026-12-04",
+    "2026-12-17",
     # "2026-12-05",  # Sat — only works as an early slot before the 13:25 Kinosaki train
 ]
 
