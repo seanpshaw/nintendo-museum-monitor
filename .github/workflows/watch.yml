@@ -1,0 +1,40 @@
+name: Nintendo Museum watch
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 min (GitHub often runs it later than this)
+  workflow_dispatch:         # adds a "Run workflow" button for testing
+
+permissions:
+  contents: write            # lets it save which dates it already alerted on
+
+concurrency:
+  group: museum-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install curl_cffi
+
+      - name: Check ticket availability
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python nintendo_museum_watch.py --once
+
+      - name: Remember alerted dates
+        if: always()
+        run: |
+          [ -f .nintendo_museum_state.json ] || exit 0
+          git config user.name "museum-watch-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .nintendo_museum_state.json
+          git diff --cached --quiet || { git commit -m "Update alert state"; git push; }
