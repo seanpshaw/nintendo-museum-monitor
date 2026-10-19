@@ -3,7 +3,12 @@ name: Nintendo Museum watch
 on:
   schedule:
     - cron: "*/5 * * * *"   # every 5 min (GitHub often runs it later than this)
-  workflow_dispatch:         # adds a "Run workflow" button for testing
+  workflow_dispatch:         # "Run workflow" button, and the outside trigger
+    inputs:
+      diagnose:
+        description: "Send a test push and show diagnostics"
+        type: boolean
+        default: false
 
 permissions:
   contents: write            # lets it save which dates it already alerted on
@@ -25,8 +30,8 @@ jobs:
 
       - run: pip install curl_cffi
 
-      - name: Diagnose phone push (manual runs only)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Diagnose phone push (only when the box is ticked)
+        if: inputs.diagnose == true
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: |
