@@ -25,6 +25,18 @@ jobs:
 
       - run: pip install curl_cffi
 
+      - name: Diagnose phone push (manual runs only)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          echo "Secret length: ${#NTFY_TOPIC} characters"
+          [ -n "$NTFY_TOPIC" ] || { echo "NTFY_TOPIC secret is EMPTY or missing"; exit 1; }
+          curl -sS -d "Test push from GitHub" "https://ntfy.sh/$NTFY_TOPIC"
+          echo
+          echo "Dates already alerted on:"
+          cat .nintendo_museum_state.json 2>/dev/null || echo "(none yet)"
+
       - name: Check ticket availability
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
